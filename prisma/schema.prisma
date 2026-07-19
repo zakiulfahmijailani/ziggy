@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStage {
+  DISCOVERED
+  EVALUATING
+  SHORTLISTED
+  PREPARING
+  WAITING
+  READY_TO_SUBMIT
+  SUBMITTED
+  INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+  ARCHIVED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  WAITING
+  DONE
+}
+
+enum DocumentStatus {
+  NOT_STARTED
+  DRAFTING
+  NEEDS_REVIEW
+  REVISING
+  FINAL
+  SUBMITTED
+  OUTDATED
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String?
+  projects Project[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title String
+  organization String?
+  country String?
+  description String?
+  stage ProjectStage @default(DISCOVERED)
+  risk RiskLevel @default(LOW)
+  officialDeadline DateTime?
+  personalTarget DateTime?
+  driveFolderUrl String?
+  archivedAt DateTime?
+  tasks Task[]
+  requirements Requirement[]
+  documents ProjectDocument[]
+  milestones Milestone[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId, stage])
+  @@index([officialDeadline])
+}
+
+model Task {
+  id String @id @default(cuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title String
+  description String?
+  status TaskStatus @default(TODO)
+  priority Int @default(2)
+  dueAt DateTime?
+  estimatedMinutes Int?
+  blockedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([projectId, status])
+}
+
+model Milestone {
+  id String @id @default(cuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title String
+  dueAt DateTime
+  status TaskStatus @default(TODO)
+  createdAt DateTime @default(now())
+}
+
+model Requirement {
+  id String @id @default(cuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title String
+  isRequired Boolean @default(true)
+  status DocumentStatus @default(NOT_STARTED)
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Document {
+  id String @id @default(cuid())
+  userId String
+  name String
+  type String?
+  driveFileId String?
+  driveUrl String?
+  status DocumentStatus @default(NOT_STARTED)
+  projects ProjectDocument[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+}
+
+model ProjectDocument {
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  documentId String
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  isRequired Boolean @default(false)
+  @@id([projectId, documentId])
+}
