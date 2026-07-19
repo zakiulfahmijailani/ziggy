@@ -49,6 +49,7 @@ model User {
   id String @id @default(cuid())
   email String @unique
   name String?
+  googleDriveRootFolderId String?
   projects Project[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -67,6 +68,7 @@ model Project {
   officialDeadline DateTime?
   personalTarget DateTime?
   driveFolderUrl String?
+  driveFolderId String?
   archivedAt DateTime?
   tasks Task[]
   requirements Requirement[]
