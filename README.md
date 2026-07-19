@@ -54,9 +54,17 @@ The schema lives at `prisma/schema.prisma`. It models projects, tasks, milestone
 
 `vercel.json` schedules a daily call to `/api/cron/deadline-digest` at 07:00 UTC. The endpoint already checks Vercel’s bearer token; connect it to the notification channel you prefer when email or push reminders are added.
 
-## Google Drive approach
+## Connect Google Drive
 
-The MVP keeps Google Drive as the source of truth for files. Each application stores a Drive folder URL, and the UI opens documents there. The supplied `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` entries are reserved for a later Google OAuth + Drive API integration, where file metadata can be synced without duplicating PDFs or Docs into the database.
+Ziggy keeps Google Drive as the source of truth for files. It stores only folder IDs and links, never duplicate PDFs or Docs.
+
+1. In Google Cloud, enable the Google Drive API and create a **Web application** OAuth client.
+2. Add this authorised redirect URI in production: `https://ziggy-virid.vercel.app/api/auth/google/callback`.
+3. In Vercel, add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_TOKEN_ENCRYPTION_KEY`, and `GOOGLE_DRIVE_ROOT_FOLDER_ID`.
+4. Set `GOOGLE_DRIVE_ROOT_FOLDER_ID` to the ID in your Ziggy Applications parent-folder link.
+5. Deploy, open **Applications**, choose **Connect Google Drive**, and approve the narrowly-scoped Drive connection.
+
+After that, Ziggy can create an application folder (and optional starter subfolders) directly inside your chosen parent folder. OAuth tokens are encrypted in an HTTP-only cookie for this single-user MVP; move them into an encrypted database field when adding multi-user accounts.
 
 ## Suggested next upgrades
 
