@@ -13,11 +13,11 @@ export function ProjectsPage() {
   const [query, setQuery] = useState("");
   const [driveOpen, setDriveOpen] = useState(false);
   const [token, setToken] = useState("");
-  const [rootId, setRootId] = useState("");
+  const [rootId, setRootId] = useState("1QKWZDyQrPXmyC8XOurSFZNUpBuTXjwMB");
   const [folderName, setFolderName] = useState("Ziggy Applications");
   const [starter, setStarter] = useState(true);
   const [result, setResult] = useState<string | null>(null);
-  const createDriveFolder = async () => { const response = await fetch("/api/drive/folder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: token, parentId: rootId || undefined, name: folderName, starter }) }); const data = await response.json(); setResult(response.ok ? data.url : data.error); };
+  const createDriveFolder = async () => { const match = rootId.match(/[-_a-zA-Z0-9]{20,}/); const response = await fetch("/api/drive/folder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accessToken: token, parentId: match?.[0] || rootId || undefined, name: folderName, starter }) }); const data = await response.json(); setResult(response.ok ? data.url : data.error); };
   const visible = projects.filter(p => (stage === "All" || p.stage === stage) && `${p.university} ${p.title}`.toLowerCase().includes(query.toLowerCase()));
   return <Shell><section className="page applications-page"><div className="page-title"><div><p className="eyebrow">Your application constellation</p><h1>Applications in motion</h1><p className="subtle">Every step is a small vote for the future you want.</p></div><button className="button primary"><Plus size={18}/>New application</button></div>
     <div className="application-toolbar"><div className="filter-tabs">{stages.map(item => <button onClick={() => setStage(item)} className={stage === item ? "selected" : ""} key={item}>{item}{item === "All" && <span>{projects.length}</span>}</button>)}</div><div className="toolbar-actions"><label className="mini-search"><Search size={16}/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search applications"/></label><button className="filter-button"><Filter size={16}/>Filter<ChevronDown size={14}/></button></div></div>
