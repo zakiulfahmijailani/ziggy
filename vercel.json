@@ -1,4 +1,5 @@
 {
+  "framework": "nextjs",
   "outputDirectory": ".next",
   "crons": [{ "path": "/api/cron/deadline-digest", "schedule": "0 7 * * *" }]
 }
