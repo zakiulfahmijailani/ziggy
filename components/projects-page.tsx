@@ -43,8 +43,13 @@ export function ProjectsPage() {
     }
     const response = await fetch("/api/drive/folder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, starter, institution, title: applicationTitle, country }) });
     const data = await response.json();
-    setResult(response.ok ? data.url : data.error);
-    if (response.ok && data.project) setSavedProjects((current) => [...current, data.project]);
+    if (response.ok && data.project) {
+      setSavedProjects((current) => [...current, data.project]);
+      setResult(null);
+      setDriveOpen(false);
+      return;
+    }
+    setResult(data.error);
   };
 
   const visible = savedProjects.filter((project) => (stage === "All" || project.stage === stage) && `${project.university} ${project.title}`.toLowerCase().includes(query.toLowerCase()));
