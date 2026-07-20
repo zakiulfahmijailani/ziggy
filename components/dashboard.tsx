@@ -2,12 +2,19 @@
 
 import { ArrowRight, CalendarDays, CheckCircle2, CircleAlert, Flame, Rocket, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { projects } from "@/lib/demo-data";
+import { useEffect, useState } from "react";
+import { Project, projects } from "@/lib/demo-data";
 import { Shell } from "./shell";
 import { ProjectCard, StatusDot } from "./ui";
 
 export function Dashboard() {
-  const kth = projects[0];
+  const [appProjects, setAppProjects] = useState<Project[]>(projects);
+  useEffect(() => {
+    fetch("/api/projects").then((response) => response.json()).then((data) => {
+      if (Array.isArray(data.projects) && data.projects.length) setAppProjects(data.projects);
+    }).catch(() => undefined);
+  }, []);
+  const kth = appProjects.find((project) => project.slug === "kth-geoai") || appProjects[0];
 
   return (
     <Shell>
@@ -34,7 +41,7 @@ export function Dashboard() {
         </section>
 
         <section className="stats-grid">
-          <div className="stat-card"><span className="stat-icon purple"><Rocket size={20}/></span><div><strong>1</strong><span>Active application</span></div></div>
+          <div className="stat-card"><span className="stat-icon purple"><Rocket size={20}/></span><div><strong>{appProjects.length}</strong><span>{appProjects.length === 1 ? "Active application" : "Active applications"}</span></div></div>
           <div className="stat-card"><span className="stat-icon peach"><CircleAlert size={20}/></span><div><strong>1</strong><span>Needs attention</span></div></div>
           <div className="stat-card"><span className="stat-icon mint"><CheckCircle2 size={20}/></span><div><strong>0</strong><span>Ready to submit</span></div></div>
           <div className="stat-card"><span className="stat-icon yellow"><CalendarDays size={20}/></span><div><strong>1</strong><span>Due this month</span></div></div>
@@ -55,7 +62,7 @@ export function Dashboard() {
 
         <section className="section-block applications-block">
           <div className="section-heading"><div><p className="eyebrow">Your application constellation</p><h2>In motion</h2></div><Link href="/projects">See application <ArrowRight size={15}/></Link></div>
-          <div className="project-grid"><ProjectCard project={kth} compact/></div>
+          <div className="project-grid">{appProjects.map((project) => <ProjectCard project={project} key={project.id} compact/>)}</div>
         </section>
 
         <section className="section-block attention"><div className="attention-copy"><span className="attention-icon">!</span><div><p className="eyebrow">A gentle nudge</p><h2>KTH needs your attention</h2><p>KTH is due soon and is waiting on a reference letter. A friendly follow-up today could save future stress.</p></div></div><Link href={`/projects/${kth.slug}`} className="button secondary">See the plan <ArrowRight size={16}/></Link></section>
